@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-montserrat);
+  --font-serif: var(--font-inria);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+/* ─── Mobile responsive helpers ─────────────────────────────────── */
+.adj-mobile-only { display: none; }
+
+@media (max-width: 767px) {
+
+  /* ── Show / hide ── */
+  .adj-mobile-only  { display: flex !important; }
+  .adj-desktop-only { display: none !important; }
+
+  /* ── Layout ── */
+  .adj-stack  { flex-direction: column !important; }
+  .adj-full-w { width: 100% !important; max-width: 100% !important; flex-shrink: 1 !important; }
+  .adj-pad    { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+
+  /* ── Grids ── */
+  .adj-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .adj-grid-1 { grid-template-columns: 1fr !important; }
+
+  /* ── Collections / Bestsellers sticky editorial ── */
+  .adj-unsticky {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: 2 / 3 !important;
+    background-color: #f0f0f0 !important;
+  }
+  .adj-editorial-img {
+    object-fit: contain !important;
+    object-position: center center !important;
+  }
+
+  /* ─────────────────────────────────────────────────── */
+  /*  HOME SECTION MOBILE OVERRIDES                      */
+  /* ─────────────────────────────────────────────────── */
+
+  /* Collections menu (Bodoni titles) */
+  .adj-collections-section {
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+    gap: 1.25rem !important;
+  }
+  .adj-collections-text {
+    font-size: clamp(1.35rem, 7.5vw, 2rem) !important;
+  }
+
+  /* Editorial text block above photos */
+  .adj-editorial-pad {
+    padding: 3rem 1.25rem 2rem !important;
+  }
+
+  /* Editorial photos – 2 col, good gap */
+  .adj-editorial-grid {
+    gap: 0.5rem !important;
+    padding-bottom: 3rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Velvet collection – grid instead of full-width spread */
+  .adj-velvet-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.6rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    justify-items: center !important;
+  }
+  .adj-velvet-item {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 3 / 4 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    position: relative !important;
+  }
+
+  /* Split editorial (text left + photo right) → stack */
+  .adj-split-section {
+    flex-direction: column !important;
+    min-height: auto !important;
+  }
+  .adj-split-text {
+    padding: 2.5rem 1.25rem !important;
+    min-height: auto !important;
+  }
+  .adj-split-photo {
+    min-height: 80vw !important;
+    height: 80vw !important;
+    max-height: 420px !important;
+  }
+}
