@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Pencil, CreditCard, Smartphone } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase/client";
 
@@ -145,7 +144,45 @@ export default function CheckoutPage() {
 
         <div className="flex adj-stack" style={{ gap: "5rem", alignItems: "flex-start" }}>
 
-          {/* LEFT — Form */}
+          {/* LEFT — Order summary */}
+          <div className="adj-full-w" style={{ width: "360px", flexShrink: 0 }}>
+            <h2 style={{ fontFamily: "var(--font-inria)", fontSize: "1.3rem", fontWeight: 400, color: "#000", marginBottom: "1.25rem", paddingBottom: "0.75rem", borderBottom: "1px solid #e5e5e5" }}>
+              Order Summary
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
+              {items.map((item) => (
+                <div key={item.id} className="flex" style={{ gap: "1rem", alignItems: "center" }}>
+                  <div style={{ width: "70px", height: "80px", backgroundColor: "#e8e8e8", position: "relative", flexShrink: 0 }}>
+                    <Image src={item.image} alt={item.name} fill style={{ objectFit: "contain", padding: "0.4rem" }} sizes="70px" />
+                    <span style={{ position: "absolute", top: "-8px", right: "-8px", backgroundColor: "#555", color: "#fff", borderRadius: "50%", width: "18px", height: "18px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", fontFamily: "var(--font-montserrat)" }}>
+                      {item.quantity}
+                    </span>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#000" }}>{item.name}</div>
+                    <div style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "2px" }}>{item.collection}</div>
+                  </div>
+                  <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {item.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: "1px solid #e5e5e5", paddingTop: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <div className="flex justify-between">
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Subtotal</span>
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {subtotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Shipping</span>
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {shippingCost}</span>
+              </div>
+              <div className="flex justify-between" style={{ paddingTop: "0.6rem", borderTop: "1px solid #e5e5e5" }}>
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#000" }}>Total</span>
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, color: "#000" }}>GHS {total}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — Form */}
           <form onSubmit={handlePay} style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2.5rem" }}>
 
             {/* Guest prompt — sign in to track orders */}
@@ -343,47 +380,8 @@ export default function CheckoutPage() {
             </p>
           </form>
 
-          {/* RIGHT — Order summary */}
-          <div className="adj-full-w" style={{ width: "360px", flexShrink: 0 }}>
-            <h2 style={{ fontFamily: "var(--font-inria)", fontSize: "1.3rem", fontWeight: 400, color: "#000", marginBottom: "1.25rem", paddingBottom: "0.75rem", borderBottom: "1px solid #e5e5e5" }}>
-              Order Summary
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
-              {items.map((item) => (
-                <div key={item.id} className="flex" style={{ gap: "1rem", alignItems: "center" }}>
-                  <div style={{ width: "70px", height: "80px", backgroundColor: "#e8e8e8", position: "relative", flexShrink: 0 }}>
-                    <Image src={item.image} alt={item.name} fill style={{ objectFit: "contain", padding: "0.4rem" }} sizes="70px" />
-                    <span style={{ position: "absolute", top: "-8px", right: "-8px", backgroundColor: "#555", color: "#fff", borderRadius: "50%", width: "18px", height: "18px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", fontFamily: "var(--font-montserrat)" }}>
-                      {item.quantity}
-                    </span>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#000" }}>{item.name}</div>
-                    <div style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "2px" }}>{item.collection}</div>
-                  </div>
-                  <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {item.price * item.quantity}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ borderTop: "1px solid #e5e5e5", paddingTop: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              <div className="flex justify-between">
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Subtotal</span>
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {subtotal}</span>
-              </div>
-              <div className="flex justify-between">
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Shipping</span>
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {shippingCost}</span>
-              </div>
-              <div className="flex justify-between" style={{ paddingTop: "0.6rem", borderTop: "1px solid #e5e5e5" }}>
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#000" }}>Total</span>
-                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, color: "#000" }}>GHS {total}</span>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
