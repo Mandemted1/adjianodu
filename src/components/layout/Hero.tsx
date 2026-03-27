@@ -18,7 +18,7 @@ export default function Hero() {
       </div>
 
       {/* Mobile: centered group near top — Desktop: bottom-anchored */}
-      <div className="absolute inset-0 md:hidden flex flex-col items-center justify-start pt-40 gap-6">
+      <div className="absolute inset-0 md:hidden flex flex-col items-center justify-center gap-6">
         <h1
           className="text-white font-light leading-none"
           style={{
