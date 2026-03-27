@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
       const userId = metadata?.user_id ?? null;
       const guestEmail = customer.email;
       const paymentMethod = metadata?.payment_method ?? "card";
+      const discountCode = metadata?.discount_code ?? null;
+      const discountAmount = metadata?.discount_amount ?? 0;
 
       // Create order
       const { data: order, error: orderError } = await supabaseAdmin
@@ -54,6 +56,8 @@ export async function POST(req: NextRequest) {
           payment_method: paymentMethod,
           paystack_ref: reference,
           shipping_address: shippingAddress,
+          discount_code: discountCode,
+          discount_amount: discountAmount,
         })
         .select()
         .single();
@@ -61,6 +65,11 @@ export async function POST(req: NextRequest) {
       if (orderError || !order) {
         console.error("Order creation failed:", orderError);
         return NextResponse.json({ error: "Order creation failed" }, { status: 500 });
+      }
+
+      // Increment discount code usage
+      if (discountCode) {
+        await supabaseAdmin.rpc("increment_discount_uses", { code_value: discountCode });
       }
 
       // Create order items

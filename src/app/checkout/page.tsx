@@ -61,10 +61,36 @@ export default function CheckoutPage() {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState("");
 
+  const [discountInput, setDiscountInput]       = useState("");
+  const [appliedCode, setAppliedCode]           = useState<{ code: string; percentage: number } | null>(null);
+  const [discountError, setDiscountError]       = useState("");
+  const [applyingCode, setApplyingCode]         = useState(false);
+
   const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
-  const shippingCost = form.shippingMethod === "express" ? 50 : 20;
-  const total = subtotal + shippingCost;
+  const shippingCost   = form.shippingMethod === "express" ? 50 : 20;
+  const discountAmount = appliedCode ? Math.round(subtotal * appliedCode.percentage / 100) : 0;
+  const total          = subtotal + shippingCost - discountAmount;
+
+  const handleApplyCode = async () => {
+    if (!discountInput.trim()) return;
+    setDiscountError("");
+    setApplyingCode(true);
+    try {
+      const res  = await fetch("/api/discount-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: discountInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setDiscountError(data.error); setAppliedCode(null); }
+      else { setAppliedCode({ code: data.code, percentage: data.percentage }); setDiscountError(""); }
+    } catch {
+      setDiscountError("Something went wrong.");
+    } finally {
+      setApplyingCode(false);
+    }
+  };
 
   const handlePay = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,6 +107,8 @@ export default function CheckoutPage() {
           metadata: {
             subtotal,
             shipping: shippingCost,
+            discount_code: appliedCode?.code ?? null,
+            discount_amount: discountAmount,
             payment_method: paymentMethod,
             user_id: userId,
             shipping_address: {
@@ -167,15 +195,46 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div style={{ borderTop: "1px solid #e5e5e5", paddingTop: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-              <div className="flex justify-between">
+              {/* Discount code input */}
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                <input
+                  type="text"
+                  value={discountInput}
+                  onChange={(e) => { setDiscountInput(e.target.value.toUpperCase()); setDiscountError(""); }}
+                  placeholder="DISCOUNT CODE"
+                  disabled={!!appliedCode}
+                  style={{ ...inputStyle, flex: 1, padding: "0.6rem 0.75rem", fontSize: "10px", letterSpacing: "0.12em", backgroundColor: appliedCode ? "#f7f7f7" : "#fff" }}
+                />
+                {appliedCode ? (
+                  <button type="button" onClick={() => { setAppliedCode(null); setDiscountInput(""); }}
+                    style={{ padding: "0.6rem 0.85rem", backgroundColor: "#fff", border: "1px solid #e0e0e0", fontFamily: "var(--font-montserrat)", fontSize: "10px", letterSpacing: "0.1em", color: "#888", cursor: "pointer" }}>
+                    ×
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleApplyCode} disabled={applyingCode || !discountInput.trim()}
+                    style={{ padding: "0.6rem 0.85rem", backgroundColor: "#000", border: "none", fontFamily: "var(--font-montserrat)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#fff", cursor: "pointer", opacity: !discountInput.trim() ? 0.4 : 1 }}>
+                    {applyingCode ? "..." : "Apply"}
+                  </button>
+                )}
+              </div>
+              {discountError && <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#c00", letterSpacing: "0.06em" }}>{discountError}</p>}
+              {appliedCode && <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#2e7d32", letterSpacing: "0.06em" }}>{appliedCode.code} — {appliedCode.percentage}% off applied</p>}
+
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Subtotal</span>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {subtotal}</span>
               </div>
-              <div className="flex justify-between">
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Shipping</span>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {shippingCost}</span>
               </div>
-              <div className="flex justify-between" style={{ paddingTop: "0.6rem", borderTop: "1px solid #e5e5e5" }}>
+              {appliedCode && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#2e7d32" }}>Discount ({appliedCode.percentage}%)</span>
+                  <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#2e7d32" }}>−GHS {discountAmount}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.6rem", borderTop: "1px solid #e5e5e5" }}>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#000" }}>Total</span>
                 <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, color: "#000" }}>GHS {total}</span>
               </div>
@@ -335,6 +394,31 @@ export default function CheckoutPage() {
                 ))}
               </div>
               <div style={{ borderTop: "1px solid #e5e5e5", paddingTop: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                {/* Discount code input */}
+                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                  <input
+                    type="text"
+                    value={discountInput}
+                    onChange={(e) => { setDiscountInput(e.target.value.toUpperCase()); setDiscountError(""); }}
+                    placeholder="DISCOUNT CODE"
+                    disabled={!!appliedCode}
+                    style={{ ...inputStyle, flex: 1, padding: "0.6rem 0.75rem", fontSize: "10px", letterSpacing: "0.12em", backgroundColor: appliedCode ? "#f7f7f7" : "#fff" }}
+                  />
+                  {appliedCode ? (
+                    <button type="button" onClick={() => { setAppliedCode(null); setDiscountInput(""); }}
+                      style={{ padding: "0.6rem 0.85rem", backgroundColor: "#fff", border: "1px solid #e0e0e0", fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#888", cursor: "pointer" }}>
+                      ×
+                    </button>
+                  ) : (
+                    <button type="button" onClick={handleApplyCode} disabled={applyingCode || !discountInput.trim()}
+                      style={{ padding: "0.6rem 0.85rem", backgroundColor: "#000", border: "none", fontFamily: "var(--font-montserrat)", fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#fff", cursor: "pointer", opacity: !discountInput.trim() ? 0.4 : 1 }}>
+                      {applyingCode ? "..." : "Apply"}
+                    </button>
+                  )}
+                </div>
+                {discountError && <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#c00", letterSpacing: "0.06em" }}>{discountError}</p>}
+                {appliedCode && <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "9px", color: "#2e7d32", letterSpacing: "0.06em" }}>{appliedCode.code} — {appliedCode.percentage}% off applied</p>}
+
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Subtotal</span>
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {subtotal}</span>
@@ -343,6 +427,12 @@ export default function CheckoutPage() {
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#888" }}>Shipping</span>
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#000" }}>GHS {shippingCost}</span>
                 </div>
+                {appliedCode && (
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#2e7d32" }}>Discount ({appliedCode.percentage}%)</span>
+                    <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#2e7d32" }}>−GHS {discountAmount}</span>
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.6rem", borderTop: "1px solid #e5e5e5" }}>
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#000" }}>Total</span>
                   <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 600, color: "#000" }}>GHS {total}</span>
