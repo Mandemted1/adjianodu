@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User, EyeOff, Eye } from "lucide-react";
@@ -9,7 +9,7 @@ import Footer from "@/components/layout/Footer";
 import { supabase } from "@/lib/supabase/client";
 import { useCart } from "@/context/CartContext";
 
-export default function AccountPage() {
+function AccountForm() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/account/orders";
@@ -204,5 +204,13 @@ export default function AccountPage() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense>
+      <AccountForm />
+    </Suspense>
   );
 }

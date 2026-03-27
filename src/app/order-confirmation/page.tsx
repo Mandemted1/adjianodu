@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase/client";
 
 import type { Order } from "@/lib/types";
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const searchParams            = useSearchParams();
   const reference               = searchParams.get("reference") ?? "";
   const { clearCart }           = useCart();
@@ -126,5 +126,13 @@ export default function OrderConfirmationPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense>
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }
