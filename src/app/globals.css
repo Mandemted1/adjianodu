@@ -11,8 +11,13 @@
   padding: 0;
 }
 
+html {
+  background-color: #000;
+}
+
 body {
   font-family: var(--font-montserrat), sans-serif;
+  background-color: #fff;
 }
 
 /* ─── Mobile responsive helpers ─────────────────────────────────── */

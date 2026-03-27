@@ -17,12 +17,12 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40" />
       </div>
 
-      {/* NEVER BLEND IN — sits higher up */}
-      <div className="absolute bottom-36 md:bottom-44 left-0 right-0 flex justify-center">
+      {/* Mobile: centered group near top — Desktop: bottom-anchored */}
+      <div className="absolute inset-0 md:hidden flex flex-col items-center justify-start pt-40 gap-6">
         <h1
           className="text-white font-light leading-none"
           style={{
-            fontSize: "clamp(2.5rem, 6.5vw, 6rem)",
+            fontSize: "clamp(2.5rem, 10vw, 4rem)",
             fontFamily: "var(--font-inria)",
             fontStyle: "italic",
             fontWeight: 300,
@@ -31,22 +31,50 @@ export default function Hero() {
         >
           NEVER BLEND IN
         </h1>
-      </div>
-
-      {/* SHOP button — sits lower */}
-      <div className="absolute bottom-20 md:bottom-24 left-0 right-0 flex justify-center">
         <Link
           href="/collections"
           className="inline-flex items-center justify-center border border-white text-white uppercase font-light tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300"
           style={{
             fontFamily: "var(--font-montserrat)",
-            fontSize: "11px",
-            width: "340px",
-            height: "56px",
+            fontSize: "10px",
+            width: "220px",
+            height: "46px",
           }}
         >
           Shop
         </Link>
+      </div>
+
+      {/* Desktop layout */}
+      <div className="hidden md:block">
+        <div className="absolute bottom-44 left-0 right-0 flex justify-center">
+          <h1
+            className="text-white font-light leading-none"
+            style={{
+              fontSize: "clamp(2.5rem, 6.5vw, 6rem)",
+              fontFamily: "var(--font-inria)",
+              fontStyle: "italic",
+              fontWeight: 300,
+              letterSpacing: "0.02em",
+            }}
+          >
+            NEVER BLEND IN
+          </h1>
+        </div>
+        <div className="absolute bottom-24 left-0 right-0 flex justify-center">
+          <Link
+            href="/collections"
+            className="inline-flex items-center justify-center border border-white text-white uppercase font-light tracking-[0.4em] hover:bg-white hover:text-black transition-all duration-300"
+            style={{
+              fontFamily: "var(--font-montserrat)",
+              fontSize: "11px",
+              width: "340px",
+              height: "56px",
+            }}
+          >
+            Shop
+          </Link>
+        </div>
       </div>
     </section>
   );
