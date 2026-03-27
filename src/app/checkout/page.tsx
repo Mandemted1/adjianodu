@@ -313,7 +313,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Order summary — mobile only, shown before payment */}
-            <div className="adj-mobile-only" style={{ flexDirection: "column", borderTop: "1px solid #e5e5e5", paddingTop: "1.5rem" }}>
+            <div className="adj-mobile-only" style={{ flexDirection: "column" }}>
               <h2 style={{ fontFamily: "var(--font-inria)", fontSize: "1.3rem", fontWeight: 400, color: "#000", marginBottom: "1.25rem", paddingBottom: "0.75rem", borderBottom: "1px solid #e5e5e5" }}>
                 Order Summary
               </h2>
