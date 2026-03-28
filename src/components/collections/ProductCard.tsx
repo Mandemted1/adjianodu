@@ -35,13 +35,15 @@ export default function ProductCard({ id, name, collection, price, image }: Prod
           }}
         >
           {/* Durag image — smaller padding to reduce visual size */}
-          <Image
-            src={image}
-            alt={name}
-            fill
-            style={{ objectFit: "contain", padding: "2.5rem" }}
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
+          {image && (
+            <Image
+              src={image}
+              alt={name}
+              fill
+              style={{ objectFit: "contain", padding: "2.5rem" }}
+              sizes="(max-width: 768px) 50vw, 25vw"
+            />
+          )}
 
           {/* Add to Cart — slides up on hover */}
           <div
