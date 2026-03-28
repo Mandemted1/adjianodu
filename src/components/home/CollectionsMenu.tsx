@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Category } from "@/lib/categories";
 
 export default function CollectionsMenu({ tree }: { tree: Category[] }) {
-  const items = tree.length > 0 ? tree : [];
+  const items = tree.slice(0, 3);
 
   return (
     <section className="bg-white flex flex-col items-center justify-center" style={{ paddingTop: "clamp(3rem, 13.3vw, 12rem)", paddingBottom: "clamp(3rem, 13.3vw, 12rem)", gap: "clamp(1rem, 3.9vw, 3.5rem)" }}>

@@ -79,9 +79,9 @@ export default function Bestsellers({ products }: Props) {
       </div>
 
       <div className="flex justify-center" style={{ marginTop: "3rem" }}>
-        <span className="text-black uppercase" style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 500, letterSpacing: "0.18em", borderBottom: "1px solid black", paddingBottom: "2px" }}>
+        <Link href="/bestsellers" className="text-black uppercase" style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", fontWeight: 500, letterSpacing: "0.18em", borderBottom: "1px solid black", paddingBottom: "2px", textDecoration: "none" }}>
           Bestsellers
-        </span>
+        </Link>
       </div>
 
       <style>{`
