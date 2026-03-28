@@ -6,19 +6,20 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/collections/ProductCard";
 import EditorialModelSection from "@/components/collections/EditorialModelSection";
 import FilterPanel from "@/components/collections/FilterPanel";
-import { LayoutGrid } from "lucide-react";
+import GridToggle from "@/components/collections/GridToggle";
 import { getBestsellers } from "@/lib/products";
-import { getCategoryTree } from "@/lib/categories";
 
 const SIDE_PADDING = "clamp(3rem, 8vw, 10rem)";
 
 export default async function BestsellersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ colors?: string; minPrice?: string; maxPrice?: string }>;
+  searchParams: Promise<{ colors?: string; minPrice?: string; maxPrice?: string; view?: string }>;
 }) {
-  const { colors: colorsParam, minPrice: minParam, maxPrice: maxParam } = await searchParams;
-  const [allProducts, tree] = await Promise.all([getBestsellers(), getCategoryTree()]);
+  const { colors: colorsParam, minPrice: minParam, maxPrice: maxParam, view } = await searchParams;
+  const isListView = view === "list";
+
+  const allProducts = await getBestsellers();
 
   // Compute available colors (first word of each product name)
   const allColors = [...new Set(allProducts.map((p) => p.name.split(" ")[0]))].sort();
@@ -28,12 +29,11 @@ export default async function BestsellersPage({
   const globalMin = prices.length ? Math.floor(Math.min(...prices) / 10) * 10 : 0;
   const globalMax = prices.length ? Math.ceil(Math.max(...prices) / 10) * 10 : 1000;
 
-  // Parse active filters
+  // Apply filters
   const selectedColors = colorsParam?.split(",").filter(Boolean) ?? [];
   const activeMin = minParam ? Number(minParam) : globalMin;
   const activeMax = maxParam ? Number(maxParam) : globalMax;
 
-  // Apply filters
   let filtered = allProducts;
   if (selectedColors.length > 0) {
     filtered = filtered.filter((p) => selectedColors.includes(p.name.split(" ")[0]));
@@ -56,15 +56,17 @@ export default async function BestsellersPage({
 
       {/* Filter bar */}
       <div className="flex items-center justify-between" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "0.85rem", paddingBottom: "0.85rem", borderBottom: "1px solid #e5e5e5" }}>
-        <Suspense fallback={null}>
-          <FilterPanel tree={[]} colors={allColors} priceMin={globalMin} priceMax={globalMax} />
-        </Suspense>
-        <div className="flex items-center" style={{ gap: "0.5rem" }}>
+        <div className="flex items-center" style={{ gap: "0.75rem" }}>
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.16em", color: "#000" }}>
             {filtered.length} Products
           </span>
-          <LayoutGrid size={13} strokeWidth={1.5} color="#000" />
+          <Suspense fallback={null}>
+            <GridToggle />
+          </Suspense>
         </div>
+        <Suspense fallback={null}>
+          <FilterPanel tree={[]} colors={allColors} priceMin={globalMin} priceMax={globalMax} />
+        </Suspense>
       </div>
 
       {filtered.length === 0 && (
@@ -73,33 +75,45 @@ export default async function BestsellersPage({
         </div>
       )}
 
-      {first4.length > 0 && (
-        <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
-          <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-            {first4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
-          </div>
-        </div>
-      )}
-
-      {next4.length > 0 && (
-        <EditorialModelSection
-          imageSrc="/images/bestsellers/editorial-model.png"
-          imageAlt="Bestsellers Editorial"
-          rightPadding={SIDE_PADDING}
-          gridChildren={
+      {isListView ? (
+        filtered.length > 0 && (
+          <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
             <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
-              {next4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+              {filtered.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
             </div>
-          }
-        />
-      )}
-
-      {rest.length > 0 && (
-        <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
-          <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-            {rest.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
           </div>
-        </div>
+        )
+      ) : (
+        <>
+          {first4.length > 0 && (
+            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+              <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
+                {first4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+              </div>
+            </div>
+          )}
+
+          {next4.length > 0 && (
+            <EditorialModelSection
+              imageSrc="/images/bestsellers/editorial-model.png"
+              imageAlt="Bestsellers Editorial"
+              rightPadding={SIDE_PADDING}
+              gridChildren={
+                <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+                  {next4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                </div>
+              }
+            />
+          )}
+
+          {rest.length > 0 && (
+            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
+              <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
+                {rest.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <Footer />
