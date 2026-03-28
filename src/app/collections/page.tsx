@@ -9,7 +9,9 @@ import FilterPanel from "@/components/collections/FilterPanel";
 import GridToggle from "@/components/collections/GridToggle";
 import { getAllProducts } from "@/lib/products";
 import { getCategoryTree } from "@/lib/categories";
+import { getEditorials } from "@/lib/editorials";
 import Link from "next/link";
+import type { Product } from "@/lib/types";
 
 const SIDE_PADDING = "clamp(3rem, 8vw, 10rem)";
 
@@ -20,7 +22,12 @@ export default async function CollectionsPage({
 }) {
   const { cat, colors: colorsParam, minPrice: minParam, maxPrice: maxParam, view } = await searchParams;
   const isListView = view === "list";
-  const [allProducts, tree] = await Promise.all([getAllProducts(), getCategoryTree()]);
+
+  const [allProducts, tree, editorials] = await Promise.all([
+    getAllProducts(),
+    getCategoryTree(),
+    getEditorials("collections", cat ?? null),
+  ]);
 
   // Compute available colors (first word of each product name)
   const allColors = [...new Set(allProducts.map((p) => p.name.split(" ")[0]))].sort();
@@ -56,17 +63,29 @@ export default async function CollectionsPage({
     }
   }
 
-  // Apply color filter
+  // Apply color + price filters
   if (selectedColors.length > 0) {
     filtered = filtered.filter((p) => selectedColors.includes(p.name.split(" ")[0]));
   }
-
-  // Apply price filter
   filtered = filtered.filter((p) => p.price >= activeMin && p.price <= activeMax);
 
-  const first4 = filtered.slice(0, 4);
-  const next4  = filtered.slice(4, 8);
-  const rest   = filtered.slice(8);
+  // Build editorial sections: consume products through each editorial in order
+  type EditorialSection = { before: Product[]; beside: Product[]; imageUrl: string; altText: string; position: "after_4" | "after_2" };
+  const editorialSections: EditorialSection[] = [];
+  let remaining = [...filtered];
+
+  for (const ed of editorials) {
+    const beforeCount = ed.position === "after_2" ? 2 : 4;
+    if (remaining.length < beforeCount + 4) break;
+    editorialSections.push({
+      before:    remaining.slice(0, beforeCount),
+      beside:    remaining.slice(beforeCount, beforeCount + 4),
+      imageUrl:  ed.image_url,
+      altText:   ed.alt_text,
+      position:  ed.position,
+    });
+    remaining = remaining.slice(beforeCount + 4);
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#fff" }}>
@@ -133,7 +152,7 @@ export default async function CollectionsPage({
       )}
 
       {isListView ? (
-        /* List view — all products in a single 2-col grid */
+        /* List view — 2-col flat grid */
         filtered.length > 0 && (
           <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
             <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
@@ -142,33 +161,51 @@ export default async function CollectionsPage({
           </div>
         )
       ) : (
-        /* Grid view — 4-col with editorial break */
+        /* Grid view — editorial sections then remaining */
         <>
-          {first4.length > 0 && (
-            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+          {editorialSections.map((section, i) => (
+            <div key={i}>
+              {/* Products before the editorial */}
+              <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
+                {section.position === "after_4" ? (
+                  <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
+                    {section.before.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                  </div>
+                ) : (
+                  <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+                    {section.before.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                  </div>
+                )}
+              </div>
+
+              {/* Editorial image + 4 products beside it */}
+              <EditorialModelSection
+                imageSrc={section.imageUrl}
+                imageAlt={section.altText}
+                rightPadding={SIDE_PADDING}
+                gridChildren={
+                  <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+                    {section.beside.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                  </div>
+                }
+              />
+            </div>
+          ))}
+
+          {/* Remaining products after all editorial sections */}
+          {remaining.length > 0 && (
+            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
               <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-                {first4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                {remaining.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
               </div>
             </div>
           )}
 
-          {next4.length > 0 && (
-            <EditorialModelSection
-              imageSrc="/images/collections/editorial-model.png"
-              imageAlt="Editorial"
-              rightPadding={SIDE_PADDING}
-              gridChildren={
-                <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
-                  {next4.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
-                </div>
-              }
-            />
-          )}
-
-          {rest.length > 0 && (
+          {/* No editorials configured — show all in 4-col grid */}
+          {editorialSections.length === 0 && filtered.length > 0 && (
             <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
               <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-                {rest.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
+                {filtered.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
               </div>
             </div>
           )}
