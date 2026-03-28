@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
   const reference = req.nextUrl.searchParams.get("reference");
@@ -8,9 +8,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Reference is required" }, { status: 400 });
   }
 
-  const { data: order, error } = await supabaseAdmin
+  // Only return the fields the confirmation page actually needs.
+  // Shipping address, order items, and payment details are intentionally excluded.
+  const { data: order, error } = await getSupabaseAdmin()
     .from("orders")
-    .select("*, order_items(*)")
+    .select("id, total, guest_email, user_id, paystack_ref, status")
     .eq("paystack_ref", reference.trim())
     .single();
 

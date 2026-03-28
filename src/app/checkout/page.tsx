@@ -103,29 +103,19 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email,
-          amount: total,
-          metadata: {
-            subtotal,
-            shipping: shippingCost,
-            discount_code: appliedCode?.code ?? null,
-            discount_amount: discountAmount,
-            payment_method: paymentMethod,
-            user_id: userId,
-            shipping_address: {
-              name: `${form.firstName} ${form.lastName}`,
-              address: form.address,
-              city: form.city,
-              region: form.region,
-              country: form.country,
-            },
-            items: items.map((i) => ({
-              id: i.id,
-              name: i.name,
-              price: i.price,
-              quantity: i.quantity,
-              image: i.image,
-            })),
+          shippingMethod: form.shippingMethod,
+          discount_code: appliedCode?.code ?? null,
+          payment_method: paymentMethod,
+          user_id: userId,
+          shipping_address: {
+            name: `${form.firstName} ${form.lastName}`,
+            address: form.address,
+            city: form.city,
+            region: form.region,
+            country: form.country,
           },
+          // Send only IDs + quantities — the server looks up real prices
+          items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
         }),
       });
 

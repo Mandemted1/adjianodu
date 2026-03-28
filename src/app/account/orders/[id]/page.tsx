@@ -38,14 +38,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace(`/account?redirect=/account/orders/${id}`); return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { router.replace(`/account?redirect=/account/orders/${id}`); return; }
 
-      const res = await fetch(`/api/orders/${id}`);
+      const res = await fetch(`/api/orders/${id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
       if (!res.ok) { setNotFound(true); setLoading(false); return; }
       const data: Order = await res.json();
-      // Ensure the order belongs to this user
-      if (data.user_id !== user.id) { setNotFound(true); setLoading(false); return; }
       setOrder(data);
       setLoading(false);
     })();

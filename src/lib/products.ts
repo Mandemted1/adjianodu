@@ -1,8 +1,8 @@
-import { supabaseAdmin } from "./supabase/server";
+import { getSupabaseAdmin } from "./supabase/server";
 import type { Product } from "./types";
 
 export async function getAllProducts(): Promise<Product[]> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("products")
     .select("*")
     .order("created_at", { ascending: true });
@@ -10,7 +10,7 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 export async function getProductsByCollection(collection: string): Promise<Product[]> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("products")
     .select("*")
     .eq("collection", collection)
@@ -19,7 +19,7 @@ export async function getProductsByCollection(collection: string): Promise<Produ
 }
 
 export async function getBestsellers(): Promise<Product[]> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("products")
     .select("*")
     .eq("bestseller", true)
@@ -28,7 +28,7 @@ export async function getBestsellers(): Promise<Product[]> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("products")
     .select("*")
     .eq("id", id)

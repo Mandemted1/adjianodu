@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,8 +22,10 @@ export async function POST(req: NextRequest) {
     if (event.event === "charge.success") {
       const { reference, amount, customer, metadata } = event.data;
 
+      const db = getSupabaseAdmin();
+
       // Avoid duplicate order creation if webhook fires twice
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await db
         .from("orders")
         .select("id")
         .eq("paystack_ref", reference)
@@ -33,6 +35,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
+      // All metadata values were set by our server in /api/paystack/initialize —
+      // they are not client-supplied. The total is always taken from Paystack's
+      // confirmed amount (amount / 100), not from metadata.
       const items = metadata?.items ?? [];
       const subtotal = metadata?.subtotal ?? amount / 100;
       const shipping = metadata?.shipping ?? 0;
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest) {
       const discountAmount = metadata?.discount_amount ?? 0;
 
       // Create order
-      const { data: order, error: orderError } = await supabaseAdmin
+      const { data: order, error: orderError } = await db
         .from("orders")
         .insert({
           user_id: userId,
@@ -52,7 +57,7 @@ export async function POST(req: NextRequest) {
           status: "processing",
           subtotal,
           shipping,
-          total: amount / 100,
+          total: amount / 100,   // authoritative: Paystack's confirmed amount
           payment_method: paymentMethod,
           paystack_ref: reference,
           shipping_address: shippingAddress,
@@ -69,7 +74,7 @@ export async function POST(req: NextRequest) {
 
       // Increment discount code usage
       if (discountCode) {
-        await supabaseAdmin.rpc("increment_discount_uses", { code_value: discountCode });
+        await db.rpc("increment_discount_uses", { code_value: discountCode });
       }
 
       // Create order items
@@ -83,7 +88,7 @@ export async function POST(req: NextRequest) {
           image: item.image ?? null,
         }));
 
-        await supabaseAdmin.from("order_items").insert(orderItems);
+        await db.from("order_items").insert(orderItems);
       }
     }
 

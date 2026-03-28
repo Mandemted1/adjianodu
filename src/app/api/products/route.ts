@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.toLowerCase() ?? "";
 
-  let query = supabaseAdmin.from("products").select("*");
+  const db = getSupabaseAdmin();
+  let query = db.from("products").select("*");
 
   if (q) {
     query = query.or(`name.ilike.%${q}%,collection.ilike.%${q}%`);

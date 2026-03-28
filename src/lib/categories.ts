@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabase/server";
+import { getSupabaseAdmin } from "./supabase/server";
 
 export interface Category {
   id: string;
@@ -10,7 +10,7 @@ export interface Category {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("categories")
     .select("*")
     .order("name");

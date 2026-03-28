@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabase/server";
+import { getSupabaseAdmin } from "./supabase/server";
 
 export interface Editorial {
   id: string;
@@ -16,7 +16,7 @@ export async function getEditorials(
   page: "collections" | "bestsellers",
   categoryId?: string | null
 ): Promise<Editorial[]> {
-  const { data } = await supabaseAdmin
+  const { data } = await getSupabaseAdmin()
     .from("editorials")
     .select("*")
     .eq("page", page)

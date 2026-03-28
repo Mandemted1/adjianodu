@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const { reference, email } = await req.json();
@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Reference and email are required" }, { status: 400 });
   }
 
-  const { data: order, error } = await supabaseAdmin
+  const { data: order, error } = await getSupabaseAdmin()
     .from("orders")
     .select("*, order_items(*)")
     .eq("paystack_ref", reference.trim())
