@@ -192,20 +192,11 @@ export default async function CollectionsPage({
             </div>
           ))}
 
-          {/* Remaining products after all editorial sections */}
+          {/* Remaining products (also handles the no-editorials case) */}
           {remaining.length > 0 && (
             <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
               <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
                 {remaining.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
-              </div>
-            </div>
-          )}
-
-          {/* No editorials configured — show all in 4-col grid */}
-          {editorialSections.length === 0 && filtered.length > 0 && (
-            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
-              <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-                {filtered.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
               </div>
             </div>
           )}

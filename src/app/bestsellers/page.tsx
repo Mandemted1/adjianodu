@@ -138,14 +138,6 @@ export default async function BestsellersPage({
               </div>
             </div>
           )}
-
-          {editorialSections.length === 0 && filtered.length > 0 && (
-            <div className="adj-pad" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "2.5rem", paddingBottom: "4rem" }}>
-              <div className="grid adj-grid-2" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
-                {filtered.map((p) => <ProductCard key={p.id} id={p.id} name={p.name} collection={p.collection} price={p.price} image={p.images[0] ?? ""} />)}
-              </div>
-            </div>
-          )}
         </>
       )}
 
