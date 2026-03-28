@@ -11,9 +11,14 @@ import SplitEditorial from "@/components/home/SplitEditorial";
 import Footer from "@/components/layout/Footer";
 import { getAllProducts } from "@/lib/products";
 import { getCategoryTree } from "@/lib/categories";
+import { getVelvetImages } from "@/lib/velvet";
 
 export default async function HomePage() {
-  const [allProducts, tree] = await Promise.all([getAllProducts(), getCategoryTree()]);
+  const [allProducts, tree, velvetImages] = await Promise.all([
+    getAllProducts(),
+    getCategoryTree(),
+    getVelvetImages(),
+  ]);
   const featuredProducts = allProducts.filter((p) => p.featured).slice(0, 6);
 
   return (
@@ -25,7 +30,7 @@ export default async function HomePage() {
         <Bestsellers products={featuredProducts} />
         <DiscoverSection />
         <EditorialSection />
-        <VelvetCollection />
+        <VelvetCollection images={velvetImages} />
         <SplitEditorial />
       </main>
       <Footer />

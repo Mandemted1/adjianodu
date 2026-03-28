@@ -3,16 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import type { VelvetImage } from "@/lib/velvet";
 
-const durags = [
-  { id: 1, alt: "Blue Velvet Durag" },
-  { id: 2, alt: "Grey Velvet Durag" },
-  { id: 3, alt: "Gold Velvet Durag" },
-  { id: 4, alt: "Brown Velvet Durag" },
-  { id: 5, alt: "Green Velvet Durag" },
+const FALLBACK: VelvetImage[] = [
+  { id: "1", image_url: "/images/velvet/velvet-1.png", alt_text: "Blue Velvet Durag",  sort_order: 0 },
+  { id: "2", image_url: "/images/velvet/velvet-2.png", alt_text: "Grey Velvet Durag",  sort_order: 1 },
+  { id: "3", image_url: "/images/velvet/velvet-3.png", alt_text: "Gold Velvet Durag",  sort_order: 2 },
+  { id: "4", image_url: "/images/velvet/velvet-4.png", alt_text: "Brown Velvet Durag", sort_order: 3 },
+  { id: "5", image_url: "/images/velvet/velvet-5.png", alt_text: "Green Velvet Durag", sort_order: 4 },
 ];
 
-export default function VelvetCollection() {
+export default function VelvetCollection({ images }: { images: VelvetImage[] }) {
+  const items = images.length > 0 ? images : FALLBACK;
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -41,11 +43,11 @@ export default function VelvetCollection() {
         <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>
           <style>{`.velvet-scroll::-webkit-scrollbar { display: none; }`}</style>
           <div className="velvet-scroll flex items-center" style={{ gap: "1rem", paddingLeft: "1.25rem", paddingRight: "1.25rem", width: "max-content" }}>
-            {durags.map((durag) => (
-              <div key={durag.id} className="relative flex-shrink-0" style={{ width: "160px", height: "208px" }}>
+            {items.map((item) => (
+              <div key={item.id} className="relative flex-shrink-0" style={{ width: "160px", height: "208px" }}>
                 <Image
-                  src={`/images/velvet/velvet-${durag.id}.png`}
-                  alt={durag.alt}
+                  src={item.image_url}
+                  alt={item.alt_text}
                   fill
                   className="object-contain object-center"
                   sizes="160px"
@@ -57,23 +59,23 @@ export default function VelvetCollection() {
       ) : (
         /* Desktop — spread layout */
         <div className="flex items-center justify-between">
-          {durags.map((durag, i) => {
-            const isCenter = i === 2;
+          {items.map((item, i) => {
+            const isCenter = i === Math.floor(items.length / 2);
             const size = isCenter ? 280 : 200;
             return (
               <div
-                key={durag.id}
+                key={item.id}
                 className="relative flex-shrink-0"
                 style={{
                   width: `${size}px`,
                   height: `${size * 1.3}px`,
                   marginLeft: i === 0 ? "-40px" : "0",
-                  marginRight: i === 4 ? "-40px" : "0",
+                  marginRight: i === items.length - 1 ? "-40px" : "0",
                 }}
               >
                 <Image
-                  src={`/images/velvet/velvet-${durag.id}.png`}
-                  alt={durag.alt}
+                  src={item.image_url}
+                  alt={item.alt_text}
                   fill
                   className="object-contain object-center"
                   sizes={`${size}px`}
