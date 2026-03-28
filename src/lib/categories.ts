@@ -5,6 +5,7 @@ export interface Category {
   name: string;
   description: string | null;
   parent_id: string | null;
+  homepage_label: string | null;
   children?: Category[];
 }
 
