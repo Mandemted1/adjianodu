@@ -1,9 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/collections/ProductCard";
 import EditorialModelSection from "@/components/collections/EditorialModelSection";
+import FilterPanel from "@/components/collections/FilterPanel";
 import { LayoutGrid } from "lucide-react";
 import { getAllProducts } from "@/lib/products";
 import { getCategoryTree } from "@/lib/categories";
@@ -14,26 +16,36 @@ const SIDE_PADDING = "clamp(3rem, 8vw, 10rem)";
 export default async function CollectionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string }>;
+  searchParams: Promise<{ cat?: string; colors?: string; minPrice?: string; maxPrice?: string }>;
 }) {
-  const { cat } = await searchParams;
+  const { cat, colors: colorsParam, minPrice: minParam, maxPrice: maxParam } = await searchParams;
   const [allProducts, tree] = await Promise.all([getAllProducts(), getCategoryTree()]);
 
-  // Resolve which collection names to filter by
+  // Compute available colors (first word of each product name)
+  const allColors = [...new Set(allProducts.map((p) => p.name.split(" ")[0]))].sort();
+
+  // Compute global price bounds
+  const prices = allProducts.map((p) => p.price);
+  const globalMin = prices.length ? Math.floor(Math.min(...prices) / 10) * 10 : 0;
+  const globalMax = prices.length ? Math.ceil(Math.max(...prices) / 10) * 10 : 1000;
+
+  // Parse active filters
+  const selectedColors = colorsParam?.split(",").filter(Boolean) ?? [];
+  const activeMin = minParam ? Number(minParam) : globalMin;
+  const activeMax = maxParam ? Number(maxParam) : globalMax;
+
+  // Resolve which products to show by category
   let filtered = allProducts;
   let pageTitle = "Collections";
 
   if (cat) {
-    // Check if it's a parent category
     const parent = tree.find((p) => p.id === cat);
     if (parent) {
       pageTitle = parent.name;
       const childNames = (parent.children ?? []).map((c) => c.name);
-      // Include products matching parent name OR any child name
       const matchNames = childNames.length > 0 ? childNames : [parent.name];
       filtered = allProducts.filter((p) => matchNames.includes(p.collection));
     } else {
-      // It's a child category — find by id across all children
       const allCats = tree.flatMap((p) => p.children ?? []);
       const child = allCats.find((c) => c.id === cat);
       if (child) {
@@ -42,6 +54,14 @@ export default async function CollectionsPage({
       }
     }
   }
+
+  // Apply color filter
+  if (selectedColors.length > 0) {
+    filtered = filtered.filter((p) => selectedColors.includes(p.name.split(" ")[0]));
+  }
+
+  // Apply price filter
+  filtered = filtered.filter((p) => p.price >= activeMin && p.price <= activeMax);
 
   const first4 = filtered.slice(0, 4);
   const next4  = filtered.slice(4, 8);
@@ -91,7 +111,10 @@ export default async function CollectionsPage({
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center justify-end" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "0.85rem", paddingBottom: "0.85rem", borderBottom: "1px solid #e5e5e5" }}>
+      <div className="flex items-center justify-between" style={{ paddingLeft: SIDE_PADDING, paddingRight: SIDE_PADDING, paddingTop: "0.85rem", paddingBottom: "0.85rem", borderBottom: "1px solid #e5e5e5" }}>
+        <Suspense fallback={null}>
+          <FilterPanel tree={tree} colors={allColors} priceMin={globalMin} priceMax={globalMax} />
+        </Suspense>
         <div className="flex items-center" style={{ gap: "0.5rem" }}>
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.16em", color: "#000" }}>
             {filtered.length} Products
@@ -102,7 +125,7 @@ export default async function CollectionsPage({
 
       {filtered.length === 0 && (
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#bbb", letterSpacing: "0.1em" }}>No products in this category yet.</p>
+          <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "#bbb", letterSpacing: "0.1em" }}>No products match the selected filters.</p>
         </div>
       )}
 
