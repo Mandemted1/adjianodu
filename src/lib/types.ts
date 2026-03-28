@@ -16,6 +16,7 @@ export interface Product {
   images: string[];
   stock: number;
   featured: boolean;
+  bestseller: boolean;
   created_at: string;
 }
 

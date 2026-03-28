@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 
@@ -40,21 +41,24 @@ export default function Bestsellers({ products }: Props) {
           {items.map((product, index) => {
             const isHovered = hoveredIndex === index;
             return (
-              <div
+              <Link
                 key={index}
+                href={`/collections/${product.id}`}
                 className="flex-shrink-0 flex flex-col items-center"
-                style={{ width: `${ITEM_WIDTH}px`, marginRight: `${ITEM_GAP}px`, cursor: "default" }}
+                style={{ width: `${ITEM_WIDTH}px`, marginRight: `${ITEM_GAP}px`, textDecoration: "none" }}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 <div className="relative w-full" style={{ height: "240px" }}>
-                  <Image
-                    src={product.images[0] ?? ""}
-                    alt={product.name}
-                    fill
-                    className="object-contain object-bottom"
-                    sizes={`${ITEM_WIDTH}px`}
-                  />
+                  {product.images[0] && (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-contain object-bottom"
+                      sizes={`${ITEM_WIDTH}px`}
+                    />
+                  )}
                 </div>
 
                 <div
@@ -68,7 +72,7 @@ export default function Bestsellers({ products }: Props) {
                     GHS {product.price}
                   </span>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

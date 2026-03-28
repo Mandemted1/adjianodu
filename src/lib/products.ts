@@ -18,6 +18,15 @@ export async function getProductsByCollection(collection: string): Promise<Produ
   return data ?? [];
 }
 
+export async function getBestsellers(): Promise<Product[]> {
+  const { data } = await supabaseAdmin
+    .from("products")
+    .select("*")
+    .eq("bestseller", true)
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
 export async function getProductById(id: string): Promise<Product | null> {
   const { data } = await supabaseAdmin
     .from("products")
