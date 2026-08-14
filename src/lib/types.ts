@@ -22,6 +22,7 @@ export interface Product {
 
 export interface ShippingAddress {
   name: string;
+  phone: string;
   address: string;
   city: string;
   region: string;

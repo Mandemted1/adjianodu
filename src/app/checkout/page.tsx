@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Pencil, CreditCard, Smartphone } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import AddressAutocomplete from "@/components/checkout/AddressAutocomplete";
 import { useCart } from "@/context/CartContext";
 import { supabase } from "@/lib/supabase/client";
 
@@ -109,6 +110,7 @@ export default function CheckoutPage() {
           user_id: userId,
           shipping_address: {
             name: `${form.firstName} ${form.lastName}`,
+            phone: form.phone,
             address: form.address,
             city: form.city,
             region: form.region,
@@ -315,23 +317,25 @@ export default function CheckoutPage() {
                     <div><label style={labelStyle}>First Name</label><input type="text" value={form.firstName} onChange={(e) => update("firstName", e.target.value)} required style={inputStyle} /></div>
                     <div><label style={labelStyle}>Last Name</label><input type="text" value={form.lastName} onChange={(e) => update("lastName", e.target.value)} required style={inputStyle} /></div>
                   </div>
-                  <div><label style={labelStyle}>Address</label><input type="text" value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Street address" required style={inputStyle} /></div>
-                  <div className="adj-grid-1" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                    <div><label style={labelStyle}>City</label><input type="text" value={form.city} onChange={(e) => update("city", e.target.value)} required style={inputStyle} /></div>
-                    <div><label style={labelStyle}>Region</label><input type="text" value={form.region} onChange={(e) => update("region", e.target.value)} required style={inputStyle} /></div>
+                  <div>
+                    <label style={labelStyle}>Address</label>
+                    <AddressAutocomplete
+                      value={form.address}
+                      onChange={(v) => update("address", v)}
+                      onPlaceSelect={(parts) => setForm((f) => ({ ...f, ...parts }))}
+                      required
+                      style={{ width: "100%" }}
+                    />
                   </div>
-                  <div className="adj-grid-1" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                    <div>
-                      <label style={labelStyle}>Country</label>
-                      <div style={{ position: "relative" }}>
-                        <select value={form.country} onChange={(e) => update("country", e.target.value)} style={{ ...inputStyle, appearance: "none", paddingRight: "2rem", cursor: "pointer" }}>
-                          <option>Ghana</option><option>Nigeria</option><option>United Kingdom</option>
-                          <option>United States</option><option>Canada</option><option>France</option><option>Other</option>
-                        </select>
-                        <ChevronDown size={13} style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#888" }} />
-                      </div>
+                  <div>
+                    <label style={labelStyle}>Country</label>
+                    <div style={{ position: "relative" }}>
+                      <select value={form.country} onChange={(e) => update("country", e.target.value)} style={{ ...inputStyle, appearance: "none", paddingRight: "2rem", cursor: "pointer" }}>
+                        <option>Ghana</option><option>Nigeria</option><option>United Kingdom</option>
+                        <option>United States</option><option>Canada</option><option>France</option><option>Other</option>
+                      </select>
+                      <ChevronDown size={13} style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#888" }} />
                     </div>
-                    <div><label style={labelStyle}>Postal Code</label><input type="text" value={form.postal} onChange={(e) => update("postal", e.target.value)} style={inputStyle} /></div>
                   </div>
                 </div>
               )}
