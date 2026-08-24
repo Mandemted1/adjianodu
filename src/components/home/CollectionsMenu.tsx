@@ -2,10 +2,13 @@ import Link from "next/link";
 import type { Category } from "@/lib/categories";
 
 export default function CollectionsMenu({ tree }: { tree: Category[] }) {
-  // Show only top-level categories that have a homepage_label set, up to 3
-  const items = tree.filter((c) => c.homepage_label).slice(0, 3);
+  // Admin-curated selection: categories explicitly chosen (and ordered) for the homepage
+  const items = tree
+    .filter((c) => c.homepage_order != null)
+    .sort((a, b) => (a.homepage_order ?? 0) - (b.homepage_order ?? 0))
+    .slice(0, 3);
 
-  // Fallback: if no labels set yet, show first 3 categories by name
+  // Fallback: if nothing has been curated yet, show first 3 categories by name
   const display = items.length > 0 ? items : tree.slice(0, 3);
 
   if (display.length === 0) return null;
