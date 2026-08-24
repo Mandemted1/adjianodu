@@ -67,6 +67,11 @@ export default function AddressAutocomplete({
 
     const el = new window.google.maps.places.PlaceAutocompleteElement();
     if (required) el.setAttribute("required", "");
+    el.style.width = "100%";
+    // PlaceAutocompleteElement renders its own input internally, but accepts
+    // these standard CSS properties directly on the host element to match
+    // the surrounding site's input styling.
+    if (style) Object.assign(el.style, style);
     containerRef.current.appendChild(el);
 
     el.addEventListener("gmp-select", async ({ placePrediction }: any) => {
@@ -101,7 +106,7 @@ export default function AddressAutocomplete({
         strategy="afterInteractive"
         onReady={initAutocomplete}
       />
-      <div ref={containerRef} style={{ width: "100%", ...style }} />
+      <div ref={containerRef} style={{ width: "100%" }} />
     </>
   );
 }

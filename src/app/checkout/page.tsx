@@ -324,7 +324,7 @@ export default function CheckoutPage() {
                       onChange={(v) => update("address", v)}
                       onPlaceSelect={(parts) => setForm((f) => ({ ...f, ...parts }))}
                       required
-                      style={{ width: "100%" }}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
